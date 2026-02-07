@@ -1,19 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions>
-    <Transaction>2026/01/23 07:06:40.886,=C:\Developments\Unit1.pas</Transaction>
-    <Transaction>2026/01/23 07:07:52.326,C:\Developments\apm-bpjs\Main_u.pas=C:\Developments\Unit1.pas</Transaction>
-    <Transaction>2026/01/23 07:07:52.326,C:\Developments\apm-bpjs\Main_u.dfm=C:\Developments\Unit1.dfm</Transaction>
-    <Transaction>2026/01/23 07:08:05.434,=C:\Developments\Unit2.pas</Transaction>
-    <Transaction>2026/01/23 07:09:02.828,C:\Developments\apm-bpjs\FrmLogin_U.dfm=C:\Developments\Unit2.dfm</Transaction>
-    <Transaction>2026/01/23 07:09:02.828,C:\Developments\apm-bpjs\FrmLogin_U.pas=C:\Developments\Unit2.pas</Transaction>
-    <Transaction>2026/01/23 07:09:22.436,C:\Developments\apm-bpjs\FrmMain_u.pas=C:\Developments\apm-bpjs\Main_u.pas</Transaction>
-    <Transaction>2026/01/23 07:09:22.436,C:\Developments\apm-bpjs\FrmMain_u.dfm=C:\Developments\apm-bpjs\Main_u.dfm</Transaction>
-    <Transaction>2026/01/23 07:17:59.638,C:\Developments\apm-bpjs\apmBpjs.dproj=C:\Developments\Project1.dproj</Transaction>
-    <Transaction>2026/01/23 08:39:31.010,=C:\Developments\apm-bpjs\CetakNoAntrianMandiri.pas</Transaction>
-    <Transaction>2026/01/23 08:41:04.209,C:\Developments\apm-bpjs\CetakNoAntrianMandiri.pas=</Transaction>
-    <Transaction>2026/01/23 09:44:00.595,=C:\Developments\apm-bpjs\Unit1.pas</Transaction>
-    <Transaction>2026/01/23 09:45:01.214,C:\Developments\apm-bpjs\Dm_u.pas=C:\Developments\apm-bpjs\Unit1.pas</Transaction>
-    <Transaction>2026/01/23 09:45:01.214,C:\Developments\apm-bpjs\Dm_u.dfm=C:\Developments\apm-bpjs\Unit1.dfm</Transaction>
+	<Transactions>
+    <Transaction>2026/01/23 07:06:40.000.886,=C:\Developments\Unit1.pas</Transaction>
+    <Transaction>2026/01/23 07:07:52.000.326,C:\Developments\Unit1.pas=C:\Developments\apm-bpjs\Main_u.pas</Transaction>
+    <Transaction>2026/01/23 07:07:52.000.326,C:\Developments\Unit1.dfm=C:\Developments\apm-bpjs\Main_u.dfm</Transaction>
+    <Transaction>2026/01/23 07:08:05.000.434,=C:\Developments\Unit2.pas</Transaction>
+    <Transaction>2026/01/23 07:09:02.000.828,C:\Developments\Unit2.pas=C:\Developments\apm-bpjs\FrmLogin_U.pas</Transaction>
+    <Transaction>2026/01/23 07:09:02.000.828,C:\Developments\Unit2.dfm=C:\Developments\apm-bpjs\FrmLogin_U.dfm</Transaction>
+    <Transaction>2026/01/23 07:09:22.000.436,C:\Developments\apm-bpjs\Main_u.pas=C:\Developments\apm-bpjs\FrmMain_u.pas</Transaction>
+    <Transaction>2026/01/23 07:09:22.000.436,C:\Developments\apm-bpjs\Main_u.dfm=C:\Developments\apm-bpjs\FrmMain_u.dfm</Transaction>
+    <Transaction>2026/01/23 07:17:59.000.638,C:\Developments\Project1.dproj=C:\Developments\apm-bpjs\apmBpjs.dproj</Transaction>
+    <Transaction>2026/01/23 08:39:31.000.010,=C:\Developments\apm-bpjs\CetakNoAntrianMandiri.pas</Transaction>
+    <Transaction>2026/01/23 08:41:04.000.209,C:\Developments\apm-bpjs\CetakNoAntrianMandiri.pas=</Transaction>
+    <Transaction>2026/01/23 09:44:00.000.595,=C:\Developments\apm-bpjs\Unit1.pas</Transaction>
+    <Transaction>2026/01/23 09:45:01.000.214,C:\Developments\apm-bpjs\Unit1.pas=C:\Developments\apm-bpjs\Dm_u.pas</Transaction>
+    <Transaction>2026/01/23 09:45:01.000.214,C:\Developments\apm-bpjs\Unit1.dfm=C:\Developments\apm-bpjs\Dm_u.dfm</Transaction>
+    <Transaction>2026/01/24 13:23:29.000.751,C:\Developments\apm-bpjs\FrmLogin_U.pas=</Transaction>
   </Transactions>
 </BorlandProject>

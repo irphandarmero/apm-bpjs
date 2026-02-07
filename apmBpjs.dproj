@@ -102,10 +102,6 @@
             <Form>frmMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="FrmLogin_U.pas">
-            <Form>frmLogin</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="Dm_u.pas">
             <Form>dm</Form>
             <FormType>dfm</FormType>
