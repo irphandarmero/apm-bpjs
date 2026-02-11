@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  System.JSON, Vcl.Graphics, System.DateUtils, 
+  System.JSON, Vcl.Graphics, System.DateUtils, System.StrUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, dxSkinsCore,
   dxSkinBlack, dxSkinBlue, dxSkinBlueprint, dxSkinDevExpressDarkStyle,
@@ -73,12 +73,16 @@ type
     edNoTelpon: TcxTextEdit;
     btCariRujukan: TSpeedButton;
     btCariKodeBooking: TSpeedButton;
-    edDiagnosa: TcxTextEdit;
     cxLabel10: TcxLabel;
     cxGroupBox1: TcxGroupBox;
     btRujukanBaru: TcxButton;
     btTujuanKontrol: TcxButton;
     Shape1: TShape;
+    memDiagnosa: TcxMemo;
+    Image2: TImage;
+    cxGroupBox2: TcxGroupBox;
+    tmTimeOut: TTimer;
+    btPostMRS: TcxButton;
     procedure btFristaClick(Sender: TObject);
     procedure edKodeBookingKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -87,34 +91,37 @@ type
     procedure btConfirmClick(Sender: TObject);
     procedure btSimpanCetakClick(Sender: TObject);
     procedure btShowKeyboardClick(Sender: TObject);
-    procedure edNoRujukanKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure btCariRujukanClick(Sender: TObject);
     procedure btCariKodeBookingClick(Sender: TObject);
     procedure btRujukanBaruClick(Sender: TObject);
     procedure btTujuanKontrolClick(Sender: TObject);
+    procedure tmTimeOutTimer(Sender: TObject);
+    procedure btPostMRSClick(Sender: TObject);
   private
     procedure ShowVirtualKeyboard;
     procedure RunFrista;                          // + DITAMBAHKAN
     function  IsProcessRunning(const ExeName: string): Boolean; // + DITAMBAHKAN
     function  FindFristaWindow: HWND;              // + DITAMBAHKAN
-    procedure ActivateApp(hWnd: HWND);            // + DITAMBAHKAN
+
     function  GetFristaExe: string;
 
     procedure ClearParameterValue;
 
-    procedure CariSurkon(ANoSurkon : string);
+    procedure TimeOut;
+    procedure TransaksiPDR;
 
     var
       IdRegister, IdInstansi, IdRuang : integer;
-      KodeDokter,  KodePoli, KodeDokterMapping, KodePoliMapping : string;
-      NoBPJS, NoRujukan, NoKTP, NoRM : string;
+      KodeDokter, KodeDokterMapping, KodePoliMapping : string;
+      NoBPJS, NoKTP, NoRM : string;
       TglRegister : TDateTime;
       KodeRS, HakKelas : string;
       AsalRujukan, KodePPKAsal, TglRujukan, KodeDiag, NoTelp : string;
-      sss : string;
+//      sss : string;
       tujuanKunjungan, asesmenPelayanan: string;
-      
+
+//      NoRujukan,  KodePoli : string;
+      rujukanBaru : Boolean;
     { Private declarations }
   public
     { Public declarations }
@@ -180,6 +187,16 @@ begin
   asesmenPelayanan:= '';
   btRujukanBaru.LookAndFeel.SkinName := 'HighContrast';
   btTujuanKontrol.LookAndFeel.SkinName := 'HighContrast';
+
+  btConfirm.Enabled := False;
+  pgUtama.ActivePageIndex := 0;
+end;
+procedure TfrmMain.TimeOut;
+begin
+  dm.SambungKoneksi;
+
+  tmTimeOut.Enabled := False;
+  tmTimeOut.Enabled := True;
 end;
 procedure SendText(const S: string);
 var
@@ -239,9 +256,18 @@ var
     jsa : TJSONArray;
     jso : TJSONObject;
 begin
+  TimeOut;
+
+  if edKodeBooking.Text = '' then
+  begin
+    lbNotif.Caption := 'Kode booking belum di isi.';
+    edKodeBooking.SetFocus;
+    Abort;
+  end;
   if tujuanKunjungan = '' then
   begin
-    ShowMessage('Tujuan kunjungan belum dipilih!');
+//    ShowMessage('Tujuan kunjungan belum dipilih!');
+    lbNotif.Caption := 'Tujuan kunjungan belum dipilih!';
     Abort;
   end;
     try
@@ -257,13 +283,15 @@ begin
       if dm.qTemp.IsEmpty then
       begin
         ShowMessage('Kode Booking tidak ditemukan.');
-        Exit;
+        lbNotif.Caption := 'Kode Booking tidak ditemukan.';
+        Abort;
       end;
 
 //      if dm.qTemp.FieldByName('IsSementara').AsBoolean = true then
 //      begin
 //        ShowMessage('Pasien belum check-in.');
-//        Exit;
+//        lbNotif.Caption := 'Pasien belum Check-in, Scan QRCode terlebih dahulu';
+//        Abort;
 //      end;
 
       edNamaPasien.Text := dm.qTemp.FieldValues['Nama'];
@@ -280,8 +308,9 @@ begin
       NoRM        := StringReplace(edNoRM.Text, '.', '', [rfReplaceAll]);
 
       btConfirm.Enabled := True;
+      lbNotif.Caption := 'Sukses';
     except
-      ShowMessage('Kode Booking tidak valid');
+//      ShowMessage('Kode Booking tidak valid');
     end;
 
 end;
@@ -292,6 +321,8 @@ var
     jsa : TJSONArray;
     jso : TJSONObject;
 begin
+  TimeOut;
+
   bpjs := TBpjs.Create;
     try
       memResponse.Text := bpjs.cekRujukan(edNoRujukan.Text);
@@ -304,25 +335,43 @@ begin
       jRujukan := TJSONObject.Create;
       jRujukan := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
       KodeDiag := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
+      AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
       KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
       TglRujukan := jRujukan.GetValue<string>('rujukan.tglKunjungan');
-      edDiagnosa.Text := KodeDiag + ' - ' +jRujukan.GetValue<string>('rujukan.diagnosa.nama');
+      memDiagnosa.Text := KodeDiag + ' - ' +jRujukan.GetValue<string>('rujukan.diagnosa.nama');
 
-      memResponse.Text := bpjs.cekSurkonbyNoka(NoBPJS);
-      jSurkon := TJSONObject.Create;
-      jSurkon := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
-      jsa := jSurkon.GetValue('list') as TJSONArray;
+//      ShowMessage(AsalRujukan);
+      if rujukanBaru = True then //rujukan baru
+      begin
 
-      jso := TJSONObject.Create;
-      jso := jsa.Get(0) as TJSONObject;
+      end
+      else
+      begin //kontrol
+        try
+          memResponse.Text := bpjs.cekSurkonbyNoka(NoBPJS);
+          jSurkon := TJSONObject.Create;
+          jSurkon := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
+          jsa := jSurkon.GetValue('list') as TJSONArray;
 
-      edNoSurkon.Text := jso.GetValue<string>('noSuratKontrol');
+          jso := TJSONObject.Create;
+          jso := jsa.Get(0) as TJSONObject;
+
+          edNoSurkon.Text := jso.GetValue<string>('noSuratKontrol');
+        except
+          ShowMessage('Tujuan kunjungan salah!');
+          pgUtama.ActivePageIndex := 0;
+          Abort;
+        end;
+      end;
+
       dm.LoadDokter(KodeDokter);
       dm.LoadPoli(IdRuang);
       KodeDokterMapping := dm.vDokter.FieldValues['KdDokterMapping'];
       KodePoliMapping   := dm.vPoli.FieldValues['KdRuangInstansi'];
       edNamaDokter.Text := dm.vDokter.FieldValues['Nama'];
       edNamaPoli.Text := dm.vPoli.FieldValues['Nama'];
+
+      lbNotif.Caption := 'Sukses';
     finally
       bpjs.Free;
     end;
@@ -331,9 +380,10 @@ end;
 procedure TfrmMain.btConfirmClick(Sender: TObject);
 var TanggalKunjungan : string;
     jPeserta : TJSONObject;
+    jSep, jso : TJSONObject;
+    SepArr : TJSONArray;
 begin
-
-  dm.SambungKoneksi;
+  TimeOut;
 
   TanggalKunjungan := DateToStr(Trunc(TglRegister));
   if Trunc(TglRegister) = Date then
@@ -342,6 +392,12 @@ begin
 
     bpjs := TBpjs.Create;
     try
+      memResponse.Text := bpjs.HistoriSEP(NoBPJS);
+      jSep := TJSONObject.Create;
+      jSep := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
+      SepArr := jSep.GetValue('histori') as TJSONArray;
+      jso := SepArr.Get(0) as TJSONObject;
+
 //      memResponse.Text := bpjs.cekPeserta(NoBPJS, FormatDateTime('yyyy-mm-dd', TglRegister));
       memResponse.Text := bpjs.cekRujukan(NoBPJS);
       jPeserta := TJSONObject.Create;
@@ -355,6 +411,12 @@ begin
 
       edNoRujukan.Text := jPeserta.GetValue<string>('rujukan.noKunjungan');
 
+      edNamaPx.Text := jPeserta.GetValue<string>('rujukan.peserta.nama');
+      edNomorRM.Text:= jPeserta.GetValue<string>('rujukan.peserta.mr.noMR');
+      edTanggalLahir.Text := jPeserta.GetValue<string>('rujukan.peserta.tglLahir');
+      edNoKartu.Text := jPeserta.GetValue<string>('rujukan.peserta.noKartu');
+      edNoTelpon.Text:= jPeserta.GetValue<string>('rujukan.peserta.mr.noTelepon');
+
 
     finally
       jPeserta.Free;
@@ -364,6 +426,8 @@ begin
     
     pgUtama.ActivePageIndex := 1;
     edNoRujukan.SetFocus;
+
+    lbNotif.Caption := 'Sukses';
   end else
   begin
     MessageDlg('Tanggal kunjungan tidak sesuai.', mtWarning, [mbOK], 0);
@@ -399,8 +463,31 @@ begin
 
 end;
 
+procedure TfrmMain.btPostMRSClick(Sender: TObject);
+begin
+  TimeOut;
+
+//  {"tujuanKunj":{"0": Normal,
+//                "1": Prosedur,
+//                "2": Konsul Dokter}
+//  "assesmentPel":{"1": Poli spesialis tidak tersedia pada hari sebelumnya,
+//                                 "2": Jam Poli telah berakhir pada hari sebelumnya,
+//                                 "3": Dokter Spesialis yang dimaksud tidak praktek pada hari sebelumnya,
+//                                 "4": Atas Instruksi RS} ==> diisi jika tujuanKunj = "2" atau "0" (politujuan beda dengan poli rujukan dan hari beda),
+//                                 "5": Tujuan Kontrol,}
+  tujuanKunjungan := '2';
+  asesmenPelayanan:= '5';
+  btTujuanKontrol.LookAndFeel.SkinName := 'HighContrast';
+  btRujukanBaru.LookAndFeel.SkinName := 'HighContrast';
+  btPostMRS.LookAndFeel.SkinName := 'Whiteprint';
+
+  rujukanBaru := False;
+end;
+
 procedure TfrmMain.btRujukanBaruClick(Sender: TObject);
 begin
+  TimeOut;
+
   {"tujuanKunj":{"0": Normal,
                 "1": Prosedur,
                 "2": Konsul Dokter}
@@ -408,6 +495,10 @@ begin
   asesmenPelayanan:= '';
   btRujukanBaru.LookAndFeel.SkinName := 'Whiteprint';
   btTujuanKontrol.LookAndFeel.SkinName := 'HighContrast';
+  btPostMRS.LookAndFeel.SkinName := 'HighContrast';
+  rujukanBaru := True;
+
+
 end;
 
 procedure TfrmMain.btSimpanCetakClick(Sender: TObject);
@@ -420,9 +511,62 @@ var request : TJSONObject;
     penjamin, suplesi, lokasiLaka : TJSONObject;
     skdp : TJSONObject;
     reqBody : TJSONObject;
+
+    parameter : TJSONObject;
+    namahari, jeniskunjungan : string;
+
 begin
 
   dm.SambungKoneksi;
+//  ADD ANTRIAN
+  try
+    namahari := dm.Get_Hari(dtTglPelayanan.Date);
+
+    dm.qTemp.Close;
+    dm.qTemp.SQL.Clear;
+    dm.qTemp.SQL.Text := 'exec Pr_TampilInfoAntrean :idregister, :namahari';
+    dm.qTemp.Prepared;
+    dm.qTemp.Parameters.ParamByName('idregister').Value := IdRegister;
+    dm.qTemp.Parameters.ParamByName('namahari').Value := namahari;
+    dm.qTemp.Open;
+
+//    "jeniskunjungan": {1 (Rujukan FKTP), 2 (Rujukan Internal), 3 (Kontrol), 4 (Rujukan Antar RS)},
+    if LeftStr(dm.qTemp.FieldValues['NoSP'],8) = '0190R007' then
+    begin
+      jeniskunjungan := '3';
+    end else
+    begin
+      jeniskunjungan := '1';
+    end;
+
+    parameter := TJSONObject.Create;
+    parameter.AddPair('kodebooking'      , IntToStr(IdRegister));
+    parameter.AddPair('jenispasien'      , 'JKN');
+    parameter.AddPair('nomorkartu'       , NoBPJS);
+    parameter.AddPair('nik'              , NoKTP);
+    parameter.AddPair('nohp'             , ReplaceStr(NoTelp,' ',''));
+    parameter.AddPair('kodepoli'         , KodePoliMapping);
+    parameter.AddPair('namapoli'         , edNamaPoli.Text);
+    parameter.AddPair('pasienbaru'       , TJSONNumber.Create(dm.qTemp.FieldByName('IsBaru').AsInteger));
+    parameter.AddPair('norm'             , ReplaceStr(edNoRM.Text,'.',''));
+    parameter.AddPair('tanggalperiksa'   , FormatDateTime('yyyy-mm-dd',dtTglPelayanan.Date));
+    parameter.AddPair('kodedokter'       , KodeDokterMapping);
+    parameter.AddPair('namadokter'       , edNamaDokter.Text);
+    parameter.AddPair('jampraktek'       , ReplaceStr(dm.qTemp.FieldByName('jampraktek').AsString,' - ','-'));
+    parameter.AddPair('jeniskunjungan'   , TJSONNumber.Create(cbJenisKunjungan.ItemIndex+1));
+    parameter.AddPair('nomorreferensi'   , nomorreferensi);
+    parameter.AddPair('nomorantrean'     , dm.qTemp.FieldByName('nomorantrean').AsString);
+    parameter.AddPair('angkaantrean'     , TJSONNumber.Create(qTemp.FieldByName('angkaantrean').AsInteger));
+    parameter.AddPair('estimasidilayani' , TJSONNumber.Create(DateTimeToUnix(tanggal)*1000));
+    parameter.AddPair('sisakuotajkn'     , TJSONNumber.Create(qTemp.FieldByName('sisakuotajkn').AsInteger));
+    parameter.AddPair('kuotajkn'         , TJSONNumber.Create(qTemp.FieldByName('kuotajkn').AsInteger));
+    parameter.AddPair('sisakuotanonjkn'  , TJSONNumber.Create(qTemp.FieldByName('sisakuotanonjkn').AsInteger));
+    parameter.AddPair('kuotanonjkn'      , TJSONNumber.Create(qTemp.FieldByName('kuotanonjkn').AsInteger));
+    parameter.AddPair('keterangan'       , dm.qTemp.FieldByName('keterangan').AsString);
+    sss := parameter.ToJSON;
+  finally
+    parameter.Free;
+  end;
 
   bpjs := TBpjs.Create;
   try
@@ -440,7 +584,7 @@ begin
     t_sep.AddPair('klsRawat', klsRawat); //
     t_sep.AddPair('noMR', NoRM); //
       rujukan := TJSONObject.Create;
-      rujukan.AddPair('asalRujukan', '1');
+      rujukan.AddPair('asalRujukan', AsalRujukan);
       rujukan.AddPair('tglRujukan', TglRujukan);
       rujukan.AddPair('noRujukan', edNoRujukan.Text);
       rujukan.AddPair('ppkRujukan', KodePPKAsal);
@@ -494,11 +638,14 @@ begin
     reqBody.AddPair('request', request);
 
     memResponse.Text := reqBody.ToJSON;
-    ClearParameterValue;
 
-    btConfirm.Enabled := false;
-    pgUtama.ActivePageIndex := 0;
+    {Buat SEP}
+//    memResponse.Text := bpjs.CreateSEP(memResponse.Text);
+
+
+
   finally
+    ClearParameterValue;
     bpjs.Free;
   end;
 
@@ -507,6 +654,8 @@ end;
 
 procedure TfrmMain.btTujuanKontrolClick(Sender: TObject);
 begin
+  TimeOut;
+
 //  {"tujuanKunj":{"0": Normal,
 //                "1": Prosedur,
 //                "2": Konsul Dokter}
@@ -519,6 +668,8 @@ begin
   asesmenPelayanan:= '5';
   btTujuanKontrol.LookAndFeel.SkinName := 'Whiteprint';
   btRujukanBaru.LookAndFeel.SkinName := 'HighContrast';
+  btPostMRS.LookAndFeel.SkinName := 'HighContrast';
+  rujukanBaru := False;
 end;
 
 function TfrmMain.FindFristaWindow: HWND;
@@ -530,24 +681,12 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-//  pgUtama.HideTabs:= true;
+  pgUtama.HideTabs:= true;
   pgUtama.ActivePageIndex := 0;
-end;
-
-procedure TfrmMain.ActivateApp(hWnd: HWND);
-begin
-  if IsIconic(hWnd) then
-    ShowWindow(hWnd, SW_RESTORE);
-
-  SetForegroundWindow(hWnd);
 end;
 
 procedure TfrmMain.edKodeBookingKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
-var
-    jSurkon : TJSONObject;
-    jsa : TJSONArray;
-    jso : TJSONObject;
 begin
   if Key = VK_RETURN then
   begin
@@ -588,50 +727,8 @@ begin
 
       btConfirm.Enabled := True;
 
-
     except
 
-    end;
-
-  end;
-end;
-
-procedure TfrmMain.edNoRujukanKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-var
-jSurkon : TJSONObject;
-    jsa : TJSONArray;
-    jso : TJSONObject;
-begin
-  if Key = VK_RETURN then
-  begin
-    bpjs := TBpjs.Create;
-    try
-      memResponse.Text := bpjs.cekRujukan(edNoRujukan.Text);
-      if memResponse.Text = 'Data Rujukan Tidak Ditemukan.' then
-      begin
-        MessageDlg('Rujukan tidak valid', mtError, [mbOK], 0);
-        edNoRujukan.SetFocus;
-        Abort;
-      end;
-
-      memResponse.Text := bpjs.cekSurkonbyNoka(NoBPJS);
-      jSurkon := TJSONObject.Create;
-      jSurkon := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
-      jsa := jSurkon.GetValue('list') as TJSONArray;
-
-      jso := TJSONObject.Create;
-      jso := jsa.Get(0) as TJSONObject;
-
-      edNoSurkon.Text := jso.GetValue<string>('noSuratKontrol');
-      dm.LoadDokter(KodeDokter);
-      dm.LoadPoli(IdRuang);
-      KodeDokterMapping := dm.vDokter.FieldValues['KdDokterMapping'];
-      KodePoliMapping   := dm.vPoli.FieldValues['KdRuangInstansi'];
-      edNamaDokter.Text := dm.vDokter.FieldValues['Nama'];
-      edNamaPoli.Text := dm.vPoli.FieldValues['Nama'];
-    finally
-      bpjs.Free;
     end;
 
   end;
@@ -648,28 +745,90 @@ begin
     SW_SHOWNORMAL
   );
 end;
+procedure TfrmMain.tmTimeOutTimer(Sender: TObject);
+begin
+  ClearParameterValue;
+end;
+
 procedure TfrmMain.btShowKeyboardClick(Sender: TObject);
 begin
   KillProcessByName(TABTIP_PROCESS);
   ShowVirtualKeyboard;
 end;
 
-procedure TfrmMain.CariSurkon(ANoSurkon: string);
-var jso : TJSONObject;
+procedure TfrmMain.TransaksiPDR;
+var IdJenisPembayaran, IdJenisPendapatan, IdJenisPembayaranDiskon : integer;
+    TotalBersih, TotalKotor, TotalDiskon : Currency;
+//    GrupJenisBayar, TotalPendapatan : string;
+    KodeTransaksiPenghasilan : string;
 begin
-  bpjs := TBpjs.Create;
-  try
+  dm.qTemp.Close;
+  dm.qTemp.SQL.Clear;
+  dm.qTemp.SQL.Text := 'exece pr_BuatKodeTransaksiRi :JenisTransaksi';
+  dm.qTemp.Prepared;
+  dm.qTemp.Parameters.ParamByName('JenisTransaksi').Value := 'PRJ';
+  dm.qTemp.Open;
+  KodeTransaksiPenghasilan := dm.qTemp.Fields[0].AsString;
 
-    sss := bpjs.CariNoSuratKontrol(ANoSurkon);
-    jso := TJSONObject.ParseJSONValue(sss) as TJSONObject;
-    KodePPKAsal := jso.GetValue<string>('sep.provPerujuk.kdProviderPerujuk');
-    KodeDokterMapping := jso.GetValue<string>('kodeDokter');
-    KodePoliMapping := jso.GetValue<string>('poliTujuan');
-    edNamaDokter.Text := jso.GetValue<string>('namaDokter');
-    edNamaPoli.Text := jso.GetValue<string>('namaPoliTujuan');
-  finally
-    bpjs.Free;
+//insert transaksi pengahasilan
+  dm.qTemp.Close;
+  dm.qTemp.SQL.Clear;
+  dm.qTemp.SQL.Text := 'exec pr_InsertTransaksiPenghasilan :KodeTransaksiPenghasilan , '+
+            ':KodeUser ,:KodeJenisTransBayar ,:IdRegister ,:KodeSo ,:StatusValidasi , '+
+            ':StatusBayar ,:TanggalTransaksi,:TanggalBayar,:NoBuktiPendukung,:PPNKeluaran, '+
+            ':TotalBayar,:IsResep,:RefJurnal,:DP,:WaktuPesan, :WaktuAmbil, :Voucher, :Status, '+
+            ':KodeMeja, :KodeKategoriCustomer, :KodeKaryawan, :IdRuang,:KodeMedTrans, :GrupTrans, ' +
+            ':Poin, :TotalBruto, :TglEdPoin, :IdPosTransaksi';
+  dm.qTemp.Prepared;
+  dm.qTemp.Parameters.ParamByName('KodeTransaksiPenghasilan').Value := KodeTransaksiPenghasilan;
+  dm.qTemp.Parameters.ParamByName('KodeUser').Value            := 'mobilejkn';
+  dm.qTemp.Parameters.ParamByName('KodeJenisTransBayar').Value := 'PRJ2902';
+  dm.qTemp.Parameters.ParamByName('IdRegister').Value          := IdRegister;
+  dm.qTemp.Parameters.ParamByName('KodeSo').Value              := '1112100';
+  dm.qTemp.Parameters.ParamByName('StatusValidasi').Value      := 0;
+  dm.qTemp.Parameters.ParamByName('StatusBayar').Value         := 0;
+  dm.qTemp.Parameters.ParamByName('TanggalTransaksi').Value    := DateTimeToStr(Now);
+  dm.qTemp.Parameters.ParamByName('TanggalBayar').Value        := Null;
+  dm.qTemp.Parameters.ParamByName('NoBuktiPendukung').Value   := Null;
+  dm.qTemp.Parameters.ParamByName('PPNKeluaran').Value  := null;
+  dm.qTemp.Parameters.ParamByName('TotalBayar').Value   := TotalBersih;
+  dm.qTemp.Parameters.ParamByName('IsResep').Value    := 0;
+  dm.qTemp.Parameters.ParamByName('RefJurnal').Value  := Null;
+  dm.qTemp.Parameters.ParamByName('DP').Value         := Null;
+  dm.qTemp.Parameters.ParamByName('WaktuPesan').Value := Null;
+  dm.qTemp.Parameters.ParamByName('WaktuAmbil').Value := Null;
+  dm.qTemp.Parameters.ParamByName('Voucher').Value    := Null;
+  dm.qTemp.Parameters.ParamByName('Status').Value       := Null;
+  dm.qTemp.Parameters.ParamByName('KodeMeja').Value     := Null;
+  dm.qTemp.Parameters.ParamByName('KodeKategoriCustomer').Value := Null;
+  dm.qTemp.Parameters.ParamByName('KodeKaryawan').Value :=  Null;
+  dm.qTemp.Parameters.ParamByName('IdRuang').Value      := IdRuang ;
+  dm.qTemp.Parameters.ParamByName('KodeMedTrans').Value := KodeDokter ;
+  dm.qTemp.Parameters.ParamByName('GrupTrans').Value    := 'RJ';
+  dm.qTemp.Parameters.ParamByName('Poin').Value       := 0;
+  dm.qTemp.Parameters.ParamByName('TotalBruto').Value := TotalKotor;
+  dm.qTemp.Parameters.ParamByName('TglEdPoin').Value  := Null;
+  dm.qTemp.Parameters.ParamByName('IdPosTransaksi').Value := 3;
+  dm.qTemp.ExecSQL;
 
-  end;
+//insert detail transaksi penghasilan
+  dm.qTemp.Close;
+  dm.qTemp.SQL.Clear;
+  dm.qTemp.SQL.Text := 'exec pr_InsertDetailTransaksiPenghasilanRi ' +
+                       ':KodeTransaksiPenghasilan , :KodeTarif , :KodeKaryawan , ' +
+                       ':KdBarang , :JumlahTransaksi , :HargaJual , :Diskon , ' +
+                       ':IdGudang , :HargaRata';
+  dm.qTemp.Prepared;
+  dm.qTemp.Parameters.ParamByName('KodeTransaksiPenghasilan').Value := KodeTransaksiPenghasilan;
+  dm.qTemp.Parameters.ParamByName('KodeTarif').Value    := 'RJAPO0000000004'; //PDR Spesialis
+  dm.qTemp.Parameters.ParamByName('KodeKaryawan').Value := KodeDokter;
+  dm.qTemp.Parameters.ParamByName('KdBarang').Value     := null;
+  dm.qTemp.Parameters.ParamByName('JumlahTransaksi').Value := 1;
+  dm.qTemp.Parameters.ParamByName('HargaJual').Value    := TotalKotor;
+  dm.qTemp.Parameters.ParamByName('Diskon').Value       := TotalDiskon; // 0;  // Pasien Kerjasama
+  dm.qTemp.Parameters.ParamByName('IdGudang').Value     := null;
+  dm.qTemp.Parameters.ParamByName('HargaRata').Value    := 0;
+  dm.qTemp.ExecSQL;
+
 end;
 end.
