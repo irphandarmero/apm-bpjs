@@ -6,7 +6,8 @@ uses
   System.SysUtils, System.Classes, System.Net.URLClient, System.Net.HttpClient,
   System.Net.HttpClientComponent, Data.DB, Data.Win.ADODB, System.Hash, System.JSON,
   System.NetEncoding, System.DateUtils, Winapi.Windows, MemDS, VirtualTable,
-  frxClass, frxDBSet, frxExportBaseDialog, frxExportPDF;
+  frxClass, frxDBSet, frxExportBaseDialog, frxExportPDF, frxADOComponents,
+  frxBarcode;
 
 type
   Tdm = class(TDataModule)
@@ -18,6 +19,11 @@ type
     frxPDFExport1: TfrxPDFExport;
     vTemp: TVirtualTable;
     frdbTemp: TfrxDBDataset;
+    vExData: TVirtualTable;
+    frxDbExData: TfrxDBDataset;
+    dsExData: TDataSource;
+    frxADOComponents1: TfrxADOComponents;
+    frxBarCodeObject1: TfrxBarCodeObject;
   private
     { Private declarations }
   public
@@ -25,6 +31,8 @@ type
     procedure LoadPoli(AIdRuang : integer);
 
     function SambungKoneksi : Boolean;
+    function Get_Hari(ATanggal : TDateTime):string;
+    function StringToDateTime(const Value: String): TDateTime;
     { Public declarations }
   end;
 
@@ -59,21 +67,48 @@ type
 
       function CariNoSuratKontrol(NoSurkon : string): string;
       function CariSEP(NoSep : string) : string;
-      function cariSEPkontrol(NoSEP: string): string;
-      function cekPeserta(NoKartu: string; tgl :string): string;
+      function CariSEPkontrol(NoSEP: string): string;
+      function CekPeserta(NoKartu: string; tgl :string): string;
 
-      function cekRujukan(ANoRujukan : string): string;
-      function cekSurkonbyNoka(ANoKartu : string) : string;
+      function CekRujukan(ANoRujukan : string): string;
+      function CekSurkonbyNoka(ANoKartu : string) : string;
 
-      procedure cetakSEP(NoSep : string ;  desain :boolean);
+      function CreateSEP(AData : string): string;
+      procedure CetakSEP(NoSep : string ;  desain :boolean);
 
+      function HistoriSEP(ANoKartu : string): string;
 
   end;
+  TAntrol = class(TDataModule)
+    res  : IHTTPResponse;
+    http : TNetHTTPClient;
 
+    private
+      FBaseUrl  : string;
+      FConsID   : string;
+      FSecretKey: string;
+      FKodeRs   : string;
+      FUserKey  : string;
+      FTimeStamp: string;
+      FSignature: string;
+
+      function CreateSignature(): string;
+    public
+      property BaseUrl : string read FBaseUrl write FBaseUrl;
+      property ConsID : string read FConsID write FConsID;
+      property SecretKey : string read FSecretKey write FSecretKey;
+      property UserKey : string read FUserKey write FUserKey;
+      property KodeRs : string read FKodeRs write FKodeRs;
+      property Signature : string read FSignature write FSignature;
+      property TimeStamp : string read FTimeStamp write FTimeStamp;
+
+      constructor Create;
+      function TambahAntrean(AData : string): string;
+  end;
 var
   dm: Tdm;
   bpjs : TBpjs;
-
+  antrol : TAntrol;
   CONST LzString  = 'http://192.168.1.125/lzstring/Decompress.php?';
 
 implementation
@@ -90,7 +125,30 @@ begin
   GetSystemTime(system_datetime);
   Result := SystemTimeToDateTime(system_datetime);
 end;
+function Tdm.StringToDateTime(const Value: String): TDateTime;
+var
+  FormatSettings: TFormatSettings;
+begin
+  GetLocaleFormatSettings(LOCALE_USER_DEFAULT, FormatSettings);
+  FormatSettings.DateSeparator := '-';
+  FormatSettings.ShortDateFormat := 'yyyy/mm/dd hh:nn:ss';
+  Result := StrToDateTime(Value, FormatSettings);
+end;
+function Tdm.Get_Hari(ATanggal : TDateTime):string;
+begin
+  try
+    qTemp.Close;
+    qTemp.SQL.Clear;
+    qTemp.SQL.Text := 'exec Pr_WScariHari :tanggal';
+    qTemp.Prepared;
+    qTemp.Parameters.ParamByName('tanggal').Value := FormatDateTime('yyyy-mm-dd', ATanggal);
+    qTemp.Open;
+  except
 
+  end;
+
+  Result := dm.qtemp.FieldValues['hari'];
+end;
 function Tdm.SambungKoneksi: Boolean;
 var I : integer;
 begin
@@ -250,7 +308,7 @@ begin
   end;
   Result :=  sss;
 end;
-function TBpjs.cariSEPkontrol(NoSEP: string):string;
+function TBpjs.CariSEPkontrol(NoSEP: string):string;
 var jsv : TJSONValue;
     sss : string;
 begin
@@ -279,7 +337,7 @@ begin
   end;
   Result :=  sss;
 end;
-function TBpjs.cekPeserta(NoKartu: string; tgl :string): string;
+function TBpjs.CekPeserta(NoKartu: string; tgl :string): string;
 var sss : string;
     jsv : TJSONValue;
     now : string;
@@ -309,7 +367,7 @@ begin
   Result := sss;
 end;
 
-function TBpjs.cekRujukan(ANoRujukan: string): string;
+function TBpjs.CekRujukan(ANoRujukan: string): string;
 var sss : string;
     jsv : TJSONValue;
 begin
@@ -344,7 +402,7 @@ begin
   Result := sss;
 end;
 
-function TBpjs.cekSurkonbyNoka(ANoKartu: string) : string;
+function TBpjs.CekSurkonbyNoka(ANoKartu: string) : string;
 var sss : string;
     jsv : TJSONValue;
 begin
@@ -375,7 +433,70 @@ begin
   end;
   Result := sss;
 end;
-procedure TBpjs.cetakSEP(NoSep: string ; desain : boolean);
+function TBpjs.CreateSEP(AData: string): string;
+var req : TStringStream;
+    jsv : TJSONValue;
+    sss : string;
+begin
+  http := TNetHTTPClient.Create(nil);
+  TimeStamp := IntToStr(DateTimeToUnix(NowUTC));
+  Signature := CreateSignature;
+  try
+    http.CustomHeaders['X-cons-id'] := ConsID;
+    http.CustomHeaders['X-timestamp'] := TimeStamp;
+    http.CustomHeaders['X-signature'] := Signature;
+    http.CustomHeaders['Content-Type'] := 'Application/x-www-form-urlencoded';
+
+    req := TStringStream.Create(AData , TEncoding.UTF8);
+
+    res := http.Post(BaseUrl+'SEP/2.0/insert', req );
+    jsv := TJSONObject.ParseJSONValue(res.ContentAsString);
+    if jsv.GetValue<integer>('metaData.code') = 200 then
+    begin
+      sss := jsv.GetValue<string>('response');
+      sss := Decrypt(ConsID+SecretKey+TimeStamp, sss);
+    end else
+    begin
+      sss := jsv.GetValue<string>('metaData.message');
+    end;
+  finally
+    jsv.Free;
+  end;
+  Result := sss;
+end;
+function TBpjs.HistoriSEP(ANoKartu: string) : string;
+var sss : string;
+    jsv : TJSONValue;
+begin
+  http := TNetHTTPClient.Create(nil);
+  TimeStamp := IntToStr(DateTimeToUnix(NowUTC));
+  Signature := CreateSignature;
+  try
+    http.CustomHeaders['X-cons-id'] := ConsID;
+    http.CustomHeaders['X-timestamp'] := TimeStamp;
+    http.CustomHeaders['X-signature'] := Signature;
+    http.CustomHeaders['Content-Type'] := 'Application/x-www-form-urlencoded';
+
+    res := http.Get(BaseUrl + 'monitoring/HistoriPelayanan/NoKartu/'+ ANoKartu +
+                    '/tglMulai/'+ FormatDateTime('yyyy-mm-dd', Now -30) +
+                    '/tglAkhir/'+FormatDateTime('yyyy-mm-dd', Now));
+
+    jsv := TJSONObject.ParseJSONValue(res.ContentAsString);
+    if jsv.GetValue<integer>('metaData.code') = 200 then
+    begin
+      sss := jsv.GetValue<string>('response');
+      sss := Decrypt(ConsID+SecretKey+TimeStamp, sss);
+    end else
+    begin
+      sss := jsv.GetValue<string>('metaData.message');
+    end;
+  finally
+    jsv.Free;
+  end;
+  Result := sss;
+
+end;
+procedure TBpjs.CetakSEP(NoSep: string ; desain : boolean);
 var sep , rujukan, peserta, sepKontrol: TJSONValue;
     sss , noRujukan, noKartu : string;
 begin
@@ -508,6 +629,71 @@ begin
     DM.ReportPrint.ShowReport;
 end;
 
+constructor TAntrol.Create;
+begin
 
+  dm.qTemp.Close;
+  dm.qTemp.SQL.Clear;
+  dm.qTemp.SQL.Text := 'SELECT * FROM tb_url_api ' +
+                       'WHERE namaKerjasama = :nama ' +
+                       'AND type = :tipe ' +
+                       'AND isAktif = 1 ';
+  dm.qTemp.Prepared;
+  dm.qTemp.Parameters.ParamByName('nama').Value := 'ANTROL BPJS';
+  dm.qTemp.Parameters.ParamByName('tipe').Value := 'PRODUCTION';
+  dm.qTemp.Open;
+
+  BaseUrl   := dm.qTemp.FieldValues['URL'];
+  UserKey   := dm.qTemp.FieldValues['userKey_token'];
+  ConsID    := dm.qTemp.FieldValues['consID'];
+  SecretKey := dm.qTemp.FieldValues['secretKey'];
+
+  DM.qtemp.Close;
+
+end;
+function TAntrol.CreateSignature(): string;
+var LBytes : TBytes;
+    Sign : string;
+begin
+  LBytes := THashSHA2.GetHMACAsBytes(ConsID +'&'+ TimeStamp , SecretKey , SHA256);
+  LBytes := TNetEncoding.Base64.Encode(LBytes);
+  Sign := TEncoding.Default.GetString(LBytes);
+
+  Result := Sign;
+end;
+function TAntrol.TambahAntrean(AData: string) : string;
+var jsv : TJSONValue;
+    sss : string;
+    str : TstringStream;
+begin
+  TimeStamp := IntToStr(DateTimeToUnix(NowUTC));
+  Signature := CreateSignature;
+  str := TStringStream.Create(AData,TEncoding.UTF8);
+
+  http := TNetHTTPClient.Create(nil);
+  try
+    http.CustomHeaders['X-cons-id'] := ConsID;
+    http.CustomHeaders['X-timestamp'] := TimeStamp;
+    http.CustomHeaders['X-signature'] := Signature;
+    http.CustomHeaders['Content-Type'] := 'Application/x-www-form-urlencoded';
+
+    res := http.Post(BaseUrl + 'antrean/add', str);
+//    jsv := TJSONObject.ParseJSONValue(res.ContentAsString);
+//    if jsv.GetValue<integer>('metaData.code') = 200 then
+//    begin
+//      sss := jsv.GetValue<string>('response');
+//      sss := dm_Api.Decrypt(ConsID+SecretKey+TimeStamp, sss);
+//    end else
+//    begin
+//      sss := jsv.GetValue<string>('metaData.message');
+//    end;
+
+  finally
+    jsv.Free;
+  end;
+  Result :=  res.ContentAsString;
+
+
+end;
 
 end.                        

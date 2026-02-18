@@ -3,9 +3,8 @@ object dm: Tdm
   Height = 520
   Width = 769
   object koneksi: TADOConnection
-    ConnectionString = 'FILE NAME=C:\Developments\apm-bpjs\Win32\Debug\koneksi.udl'
     LoginPrompt = False
-    Provider = 'C:\Developments\apm-bpjs\Win32\Debug\koneksi.udl'
+    Provider = 'SQLOLEDB'
     Left = 640
     Top = 184
   end
@@ -27,6 +26,8 @@ object dm: Tdm
   end
   object ReportPrint: TfrxReport
     Version = '6.5.15'
+    DataSet = frxDbExData
+    DataSetName = 'frxDbExData'
     DotMatrixReport = False
     IniFile = '\Software\Fast Reports'
     PreviewOptions.Buttons = [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind, pbOutline, pbPageSetup, pbTools, pbEdit, pbNavigator, pbExportQuick, pbCopy, pbSelection]
@@ -84,5 +85,31 @@ object dm: Tdm
     BCDToCurrency = False
     Left = 480
     Top = 184
+  end
+  object vExData: TVirtualTable
+    Left = 185
+    Top = 360
+    Data = {04000000000000000000}
+  end
+  object frxDbExData: TfrxDBDataset
+    UserName = 'frxDbExData'
+    CloseDataSource = False
+    DataSource = dsExData
+    BCDToCurrency = False
+    Left = 184
+    Top = 320
+  end
+  object dsExData: TDataSource
+    DataSet = vExData
+    Left = 184
+    Top = 408
+  end
+  object frxADOComponents1: TfrxADOComponents
+    Left = 360
+    Top = 304
+  end
+  object frxBarCodeObject1: TfrxBarCodeObject
+    Left = 360
+    Top = 360
   end
 end
