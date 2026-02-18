@@ -3,11 +3,11 @@ object frmMain: TfrmMain
   Top = 0
   Caption = 'Pendaftaran Mandiri'
   ClientHeight = 800
-  ClientWidth = 1280
+  ClientWidth = 1366
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -27
+  Font.Height = -29
   Font.Name = 'Segoe UI'
   Font.Style = []
   OldCreateOrder = False
@@ -15,7 +15,7 @@ object frmMain: TfrmMain
   WindowState = wsMaximized
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 37
+  TextHeight = 40
   object gbTop: TcxGroupBox
     Left = 0
     Top = 0
@@ -36,13 +36,13 @@ object frmMain: TfrmMain
     StyleDisabled.LookAndFeel.SkinName = 'Whiteprint'
     TabOrder = 0
     Height = 57
-    Width = 1280
+    Width = 1366
   end
   object pgUtama: TcxPageControl
     AlignWithMargins = True
     Left = 3
     Top = 60
-    Width = 1274
+    Width = 1360
     Height = 626
     Align = alClient
     TabOrder = 1
@@ -50,8 +50,8 @@ object frmMain: TfrmMain
     Properties.CustomButtons.Buttons = <>
     ClientRectBottom = 622
     ClientRectLeft = 4
-    ClientRectRight = 1270
-    ClientRectTop = 48
+    ClientRectRight = 1356
+    ClientRectTop = 51
     object TabLogin: TcxTabSheet
       Caption = 'Log in'
       ImageIndex = 0
@@ -59,8 +59,8 @@ object frmMain: TfrmMain
         AlignWithMargins = True
         Left = 3
         Top = 3
-        Width = 1260
-        Height = 568
+        Width = 1346
+        Height = 565
         Align = alClient
         Color = clWhite
         ColumnCollection = <
@@ -82,47 +82,44 @@ object frmMain: TfrmMain
             Row = 1
           end
           item
-            Column = 1
-            Control = cxGroupBox1
-            Row = 0
-          end
-          item
             Column = 0
-            Control = cxGroupBox2
+            ColumnSpan = 2
+            Control = cxGroupBox1
             Row = 0
           end>
         ParentBackground = False
         RowCollection = <
           item
             SizeStyle = ssAbsolute
-            Value = 80.000000000000000000
+            Value = 30.000000000000000000
           end
           item
             Value = 100.000000000000000000
           end>
         TabOrder = 0
         object gbIdentitas: TcxGroupBox
-          Left = 378
-          Top = 81
+          Left = 404
+          Top = 31
           Align = alClient
           Alignment = alTopCenter
           Caption = 'IDENTITAS PASIEN'
-          Style.BorderStyle = ebsNone
+          Style.BorderStyle = ebsSingle
           Style.LookAndFeel.NativeStyle = False
           Style.LookAndFeel.SkinName = 'Whiteprint'
           StyleDisabled.LookAndFeel.NativeStyle = False
           StyleDisabled.LookAndFeel.SkinName = 'Whiteprint'
           TabOrder = 0
+          ExplicitLeft = 410
           DesignSize = (
-            881
-            480)
-          Height = 486
-          Width = 881
+            941
+            527)
+          Height = 533
+          Width = 941
           object btCariKodeBooking: TSpeedButton
-            Left = 705
-            Top = 77
-            Width = 50
-            Height = 45
+            Left = 767
+            Top = 72
+            Width = 55
+            Height = 55
             Anchors = [akTop, akRight]
             Glyph.Data = {
               36100000424D3610000000000000360000002800000020000000200000000100
@@ -256,12 +253,11 @@ object frmMain: TfrmMain
               0001000000000000000000000000000000000000000000000000000000000000
               0000000000000000000000000000000000000000000000000000}
             OnClick = btCariKodeBookingClick
-            ExplicitLeft = 699
           end
           object Image2: TImage
             AlignWithMargins = True
             Left = 14
-            Top = 312
+            Top = 359
             Width = 307
             Height = 153
             Anchors = [akLeft, akBottom]
@@ -2217,6 +2213,7 @@ object frmMain: TfrmMain
               0080BC42300200000000000000F20AC10800000000000000C823A2FF07B0102A
               E3733BCBF60000000049454E44AE426082}
             Proportional = True
+            ExplicitTop = 312
           end
           object edKodeBooking: TcxTextEdit
             Left = 363
@@ -2224,8 +2221,7 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 0
             TextHint = 'Insert Kode Booking'
-            OnKeyDown = edKodeBookingKeyDown
-            Width = 336
+            Width = 396
           end
           object cxLabel5: TcxLabel
             Left = 176
@@ -2235,8 +2231,8 @@ object frmMain: TfrmMain
           end
           object btConfirm: TcxButton
             Left = 363
-            Top = 396
-            Width = 149
+            Top = 443
+            Width = 209
             Height = 69
             Anchors = [akLeft, akRight, akBottom]
             Caption = 'Konfirmasi'
@@ -2250,25 +2246,28 @@ object frmMain: TfrmMain
             Left = 176
             Top = 163
             Anchors = [akLeft, akTop, akRight]
+            Properties.ReadOnly = True
             TabOrder = 3
             TextHint = 'Nama Pasien'
-            Width = 523
+            Width = 583
           end
           object edTglLahir: TcxTextEdit
             Left = 176
             Top = 242
             Anchors = [akLeft, akTop, akRight]
+            Properties.ReadOnly = True
             TabOrder = 4
             TextHint = 'Tanggal Lahir'
-            Width = 523
+            Width = 583
           end
           object edNoRM: TcxTextEdit
             Left = 176
             Top = 320
             Anchors = [akLeft, akTop, akRight]
+            Properties.ReadOnly = True
             TabOrder = 5
             TextHint = 'Nomor Rekam Medis'
-            Width = 523
+            Width = 583
           end
           object cxLabel6: TcxLabel
             Left = 176
@@ -2309,10 +2308,33 @@ object frmMain: TfrmMain
             Style.IsFontAssigned = True
             Transparent = True
           end
+          object edNIKKtp: TcxTextEdit
+            Left = 176
+            Top = 397
+            Anchors = [akLeft, akTop, akRight]
+            Properties.Alignment.Horz = taLeftJustify
+            Properties.ReadOnly = True
+            TabOrder = 9
+            TextHint = 'NIK KTP'
+            Width = 583
+          end
+          object cxLabel11: TcxLabel
+            Left = 176
+            Top = 372
+            Caption = 'Nomor Induk Kependudukan'
+            ParentFont = False
+            Style.Font.Charset = DEFAULT_CHARSET
+            Style.Font.Color = clWindowText
+            Style.Font.Height = -19
+            Style.Font.Name = 'Segoe UI'
+            Style.Font.Style = []
+            Style.IsFontAssigned = True
+            Transparent = True
+          end
         end
         object gbQRCode: TcxGroupBox
           Left = 1
-          Top = 81
+          Top = 31
           Align = alClient
           Style.BorderStyle = ebsNone
           Style.LookAndFeel.NativeStyle = False
@@ -2321,14 +2343,14 @@ object frmMain: TfrmMain
           StyleDisabled.LookAndFeel.SkinName = 'Whiteprint'
           TabOrder = 1
           DesignSize = (
-            377
-            486)
-          Height = 486
-          Width = 377
+            403
+            533)
+          Height = 533
+          Width = 403
           object Image1: TImage
             AlignWithMargins = True
-            Left = 112
-            Top = 64
+            Left = 128
+            Top = 67
             Width = 150
             Height = 150
             Anchors = [akLeft, akTop, akRight, akBottom]
@@ -3117,28 +3139,31 @@ object frmMain: TfrmMain
           end
           object btFrista: TcxButton
             Left = 11
-            Top = 311
-            Width = 354
+            Top = 358
+            Width = 380
             Height = 80
             Anchors = [akLeft, akRight, akBottom]
             Caption = 'Validasi Frista'
+            Enabled = False
             TabOrder = 0
             TabStop = False
             OnClick = btFristaClick
           end
           object btFingerprint: TcxButton
             Left = 11
-            Top = 397
-            Width = 354
+            Top = 444
+            Width = 380
             Height = 80
             Anchors = [akLeft, akRight, akBottom]
             Caption = 'Validasi Finger'
+            Enabled = False
             TabOrder = 1
             TabStop = False
+            OnClick = btFingerprintClick
           end
         end
         object cxGroupBox1: TcxGroupBox
-          Left = 378
+          Left = 1
           Top = 1
           Align = alClient
           ParentFont = False
@@ -3149,89 +3174,13 @@ object frmMain: TfrmMain
           Style.Font.Name = 'Segoe UI'
           Style.Font.Style = []
           Style.LookAndFeel.NativeStyle = False
-          Style.LookAndFeel.SkinName = 'HighContrast'
+          Style.LookAndFeel.SkinName = 'LiquidSky'
           Style.IsFontAssigned = True
           StyleDisabled.LookAndFeel.NativeStyle = False
-          StyleDisabled.LookAndFeel.SkinName = 'HighContrast'
+          StyleDisabled.LookAndFeel.SkinName = 'LiquidSky'
           TabOrder = 2
-          Height = 80
-          Width = 881
-          object btRujukanBaru: TcxButton
-            Left = 3
-            Top = 11
-            Width = 212
-            Height = 66
-            Hint = 'Rujukan Baru'
-            Align = alLeft
-            Caption = 'Rujukan Baru'
-            Colors.PressedText = clBlack
-            LookAndFeel.NativeStyle = False
-            LookAndFeel.SkinName = 'HighContrast'
-            TabOrder = 0
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -27
-            Font.Name = 'Segoe UI'
-            Font.Style = []
-            ParentFont = False
-            WordWrap = True
-            OnClick = btRujukanBaruClick
-          end
-          object btTujuanKontrol: TcxButton
-            Left = 215
-            Top = 11
-            Width = 212
-            Height = 66
-            Hint = 'Kontrol Rutin'
-            Align = alLeft
-            Caption = 'Tujuan Kontrol'
-            LookAndFeel.NativeStyle = False
-            LookAndFeel.SkinName = 'HighContrast'
-            TabOrder = 1
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -27
-            Font.Name = 'Segoe UI'
-            Font.Style = []
-            ParentFont = False
-            WordWrap = True
-            OnClick = btTujuanKontrolClick
-            ExplicitLeft = 209
-          end
-          object btPostMRS: TcxButton
-            Left = 427
-            Top = 11
-            Width = 212
-            Height = 66
-            Hint = 'Coming soon'
-            Align = alLeft
-            Caption = 'Pasca MRS'
-            Enabled = False
-            LookAndFeel.NativeStyle = False
-            LookAndFeel.SkinName = 'HighContrast'
-            TabOrder = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -27
-            Font.Name = 'Segoe UI'
-            Font.Style = []
-            ParentFont = False
-            WordWrap = True
-            OnClick = btPostMRSClick
-          end
-        end
-        object cxGroupBox2: TcxGroupBox
-          Left = 1
-          Top = 1
-          Align = alClient
-          Style.BorderStyle = ebsNone
-          Style.LookAndFeel.NativeStyle = False
-          Style.LookAndFeel.SkinName = 'HighContrast'
-          StyleDisabled.LookAndFeel.NativeStyle = False
-          StyleDisabled.LookAndFeel.SkinName = 'HighContrast'
-          TabOrder = 3
-          Height = 80
-          Width = 377
+          Height = 30
+          Width = 1344
         end
       end
     end
@@ -3241,8 +3190,8 @@ object frmMain: TfrmMain
       object gpUtama: TGridPanel
         Left = 0
         Top = 0
-        Width = 1266
-        Height = 574
+        Width = 1352
+        Height = 571
         Align = alClient
         ColumnCollection = <
           item
@@ -3269,23 +3218,23 @@ object frmMain: TfrmMain
         TabOrder = 0
         object gbDataPelayanan: TcxGroupBox
           AlignWithMargins = True
-          Left = 446
+          Left = 476
           Top = 4
           Align = alClient
           Alignment = alTopCenter
           Caption = 'Data Pelayanan'
           TabOrder = 0
           DesignSize = (
-            816
-            566)
-          Height = 566
-          Width = 816
+            872
+            563)
+          Height = 563
+          Width = 872
           object btCariRujukan: TSpeedButton
             AlignWithMargins = True
-            Left = 754
-            Top = 144
-            Width = 50
-            Height = 45
+            Left = 810
+            Top = 140
+            Width = 55
+            Height = 55
             Anchors = [akTop, akRight]
             Glyph.Data = {
               36100000424D3610000000000000360000002800000020000000200000000100
@@ -3422,8 +3371,8 @@ object frmMain: TfrmMain
             OnClick = btCariRujukanClick
           end
           object btSimpanCetak: TcxButton
-            Left = 554
-            Top = 474
+            Left = 610
+            Top = 471
             Width = 250
             Height = 80
             Anchors = [akRight, akBottom]
@@ -3469,7 +3418,7 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 6
             TextHint = '-'
-            Width = 500
+            Width = 556
           end
           object edNamaPoli: TcxTextEdit
             Left = 304
@@ -3477,7 +3426,7 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 7
             TextHint = '-'
-            Width = 500
+            Width = 556
           end
           object edNoSurkon: TcxTextEdit
             Left = 304
@@ -3485,7 +3434,7 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 8
             TextHint = '-'
-            Width = 500
+            Width = 556
           end
           object edNoRujukan: TcxTextEdit
             Left = 304
@@ -3493,7 +3442,7 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 9
             TextHint = 'Input Nomor Rujukan'
-            Width = 444
+            Width = 500
           end
           object cxLabel9: TcxLabel
             Left = 32
@@ -3513,7 +3462,19 @@ object frmMain: TfrmMain
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 12
             Height = 89
-            Width = 500
+            Width = 556
+          end
+          object btBatal: TcxButton
+            Left = 9
+            Top = 471
+            Width = 146
+            Height = 80
+            Anchors = [akLeft, akBottom]
+            Caption = 'Batal'
+            LookAndFeel.NativeStyle = False
+            LookAndFeel.SkinName = 'TheAsphaltWorld'
+            TabOrder = 13
+            OnClick = btBatalClick
           end
         end
         object gbDataPx: TcxGroupBox
@@ -3525,10 +3486,10 @@ object frmMain: TfrmMain
           Caption = 'Data Pasien'
           TabOrder = 1
           DesignSize = (
-            436
-            566)
-          Height = 566
-          Width = 436
+            466
+            563)
+          Height = 563
+          Width = 466
           object lbNama: TcxLabel
             Left = 16
             Top = 64
@@ -3583,7 +3544,7 @@ object frmMain: TfrmMain
           end
           object lbNoTelp: TcxLabel
             Left = 16
-            Top = 220
+            Top = 259
             Caption = 'Nomor Telpon'
             ParentFont = False
             Style.Font.Charset = DEFAULT_CHARSET
@@ -3606,7 +3567,7 @@ object frmMain: TfrmMain
             Style.Font.Style = []
             Style.IsFontAssigned = True
             TabOrder = 5
-            Width = 260
+            Width = 290
           end
           object edNomorRM: TcxTextEdit
             Left = 157
@@ -3620,7 +3581,7 @@ object frmMain: TfrmMain
             Style.Font.Style = []
             Style.IsFontAssigned = True
             TabOrder = 6
-            Width = 260
+            Width = 290
           end
           object edTanggalLahir: TcxTextEdit
             Left = 157
@@ -3634,7 +3595,7 @@ object frmMain: TfrmMain
             Style.Font.Style = []
             Style.IsFontAssigned = True
             TabOrder = 7
-            Width = 260
+            Width = 290
           end
           object edNoKartu: TcxTextEdit
             Left = 157
@@ -3648,9 +3609,23 @@ object frmMain: TfrmMain
             Style.Font.Style = []
             Style.IsFontAssigned = True
             TabOrder = 8
-            Width = 260
+            Width = 290
           end
           object edNoTelpon: TcxTextEdit
+            Left = 157
+            Top = 258
+            Anchors = [akLeft, akTop, akRight]
+            ParentFont = False
+            Style.Font.Charset = DEFAULT_CHARSET
+            Style.Font.Color = clWindowText
+            Style.Font.Height = -19
+            Style.Font.Name = 'Segoe UI'
+            Style.Font.Style = []
+            Style.IsFontAssigned = True
+            TabOrder = 9
+            Width = 290
+          end
+          object edNIK: TcxTextEdit
             Left = 157
             Top = 219
             Anchors = [akLeft, akTop, akRight]
@@ -3661,8 +3636,21 @@ object frmMain: TfrmMain
             Style.Font.Name = 'Segoe UI'
             Style.Font.Style = []
             Style.IsFontAssigned = True
-            TabOrder = 9
-            Width = 260
+            TabOrder = 10
+            Width = 290
+          end
+          object lbNoKtp: TcxLabel
+            Left = 16
+            Top = 220
+            Caption = 'NIK KTP'
+            ParentFont = False
+            Style.Font.Charset = DEFAULT_CHARSET
+            Style.Font.Color = clWindowText
+            Style.Font.Height = -19
+            Style.Font.Name = 'Segoe UI'
+            Style.Font.Style = []
+            Style.IsFontAssigned = True
+            Transparent = True
           end
         end
       end
@@ -3670,16 +3658,43 @@ object frmMain: TfrmMain
     object TabJSON: TcxTabSheet
       Caption = 'JSON'
       ImageIndex = 2
-      object memResponse: TcxMemo
-        AlignWithMargins = True
-        Left = 3
-        Top = 3
+      object memResponse: TMemo
+        Left = 0
+        Top = 265
+        Width = 1352
+        Height = 281
         Align = alClient
         Lines.Strings = (
           'memResponse')
         TabOrder = 0
-        Height = 568
-        Width = 1260
+        ExplicitHeight = 306
+      end
+      object memRequest: TMemo
+        Left = 0
+        Top = 0
+        Width = 1352
+        Height = 265
+        Align = alTop
+        Lines.Strings = (
+          'memRequest')
+        TabOrder = 1
+      end
+      object btGetNoSEP: TButton
+        Left = 0
+        Top = 546
+        Width = 1352
+        Height = 25
+        Align = alBottom
+        Caption = 'Get No SEP'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 2
+        OnClick = btGetNoSEPClick
+        ExplicitTop = 550
       end
     end
   end
@@ -3691,10 +3706,10 @@ object frmMain: TfrmMain
     PanelStyle.Active = True
     TabOrder = 2
     DesignSize = (
-      1274
+      1360
       105)
     Height = 105
-    Width = 1274
+    Width = 1360
     object btShowKeyboard: TSpeedButton
       Left = 3
       Top = 3
@@ -3713,14 +3728,15 @@ object frmMain: TfrmMain
       AlignWithMargins = True
       Left = 5
       Top = 65
-      Width = 1264
+      Width = 1350
       Height = 35
       Align = alBottom
       Brush.Color = clGreen
       ExplicitTop = 69
+      ExplicitWidth = 1264
     end
     object btDone: TcxButton
-      Left = 1103
+      Left = 1189
       Top = 16
       Width = 163
       Height = 80
@@ -3749,6 +3765,65 @@ object frmMain: TfrmMain
       Style.TextColor = cl3DLight
       Style.IsFontAssigned = True
       Transparent = True
+    end
+    object btPDR: TcxButton
+      Left = 556
+      Top = 16
+      Width = 150
+      Height = 25
+      Caption = 'Transaksi PDR'
+      TabOrder = 2
+      Visible = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      OnClick = btPDRClick
+    end
+    object btCetakAntrian: TcxButton
+      Left = 400
+      Top = 17
+      Width = 150
+      Height = 25
+      Caption = 'Cetak No Antri'
+      TabOrder = 3
+      Visible = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      OnClick = btCetakAntrianClick
+    end
+    object btSync: TcxButton
+      Left = 712
+      Top = 16
+      Width = 150
+      Height = 25
+      Caption = 'Sync SEP'
+      TabOrder = 4
+      Visible = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      OnClick = btSyncClick
+    end
+    object lbIdRegister: TcxLabel
+      Left = 146
+      Top = 0
+      Caption = ' - '
+    end
+    object lbNoSep: TcxLabel
+      Left = 868
+      Top = 0
+      Caption = '-'
+      Visible = False
     end
   end
   object tmTimeOut: TTimer
