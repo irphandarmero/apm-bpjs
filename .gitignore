@@ -2,3 +2,5 @@
 /__recovery
 /Win32
 /units/__history
+*.rar
+*.zip
