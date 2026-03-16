@@ -112,4 +112,10 @@ object dm: Tdm
     Left = 360
     Top = 360
   end
+  object qTransaksi: TADOQuery
+    Connection = koneksi
+    Parameters = <>
+    Left = 640
+    Top = 296
+  end
 end

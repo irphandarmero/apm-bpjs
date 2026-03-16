@@ -54,8 +54,47 @@ procedure SendKeysToTitle(WindowTitle: String; Text: String);
 procedure SendKeysToHandle(WindowHandle: hWnd; Text: String);
 procedure MakeWindowActive(wHandle: hWnd);
 function GetHandleFromWindowTitle(TitleText: String): hWnd;
+procedure ClearAndSendText(const Text: string);
 
 implementation
+
+procedure ClearAndSendText(const Text: string);
+var
+  i: Integer;
+  vk: Word;
+begin
+  // SELECT ALL
+  keybd_event(VK_CONTROL, 0, 0, 0);
+  keybd_event(Ord('A'), 0, 0, 0);
+  keybd_event(Ord('A'), 0, KEYEVENTF_KEYUP, 0);
+  keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
+  Sleep(50);
+
+  // DELETE
+  keybd_event(VK_DELETE, 0, 0, 0);
+  keybd_event(VK_DELETE, 0, KEYEVENTF_KEYUP, 0);
+
+  Sleep(50);
+
+  // KIRIM STRING
+  for i := 1 to Length(Text) do
+  begin
+    vk := VkKeyScan(Text[i]);
+
+    // SHIFT kalau perlu
+    if (vk and $0100) <> 0 then
+      keybd_event(VK_SHIFT, 0, 0, 0);
+
+    keybd_event(vk and $FF, 0, 0, 0);
+    keybd_event(vk and $FF, 0, KEYEVENTF_KEYUP, 0);
+
+    if (vk and $0100) <> 0 then
+      keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);
+
+    Sleep(10);
+  end;
+end;
 
 procedure SendKeyString(Text: String);
 var
@@ -137,7 +176,8 @@ end;
 procedure SendKeysToHandle(WindowHandle: hWnd; Text: String);
 begin
   MakeWindowActive(WindowHandle);
-  SendKeyString(Text);
+//  SendKeyString(Text);
+  ClearAndSendText(Text);
 end;
 
 end.
