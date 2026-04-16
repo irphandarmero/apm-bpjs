@@ -37,6 +37,8 @@ type
 
     function GetApiConfig(const ANama, ATipe: string): Boolean;
     function FieldStr(const AField: string): string;
+
+    function DateToUnixTimeStampMS(ADate: String) : Int64;
     { Public declarations }
     var
       fpath : string;
@@ -59,6 +61,27 @@ var
 begin
   GetSystemTime(system_datetime);
   Result := SystemTimeToDateTime(system_datetime);
+end;
+function Tdm.DateToUnixTimeStampMS(ADate: String) : Int64;
+var
+  Year, Month, Day, Hour, Minute, Second: Word;
+  ConvertedDateTime: TDateTime;
+begin
+  // Ambil bagian tanggal
+  Year := StrToInt(Copy(ADate, 1, 4));
+  Month := StrToInt(Copy(ADate, 6, 2));
+  Day := StrToInt(Copy(ADate, 9, 2));
+
+  // Ambil bagian waktu
+  Hour := StrToInt(Copy(ADate, 12, 2));
+  Minute := StrToInt(Copy(ADate, 15, 2));
+  Second := StrToInt(Copy(ADate, 18, 2));
+
+  // Gabungkan jadi TDateTime
+  ConvertedDateTime := EncodeDateTime(Year, Month, Day, Hour, Minute, Second, 0);
+
+  // Tampilkan hasil
+  Result := DateTimeToUnix(IncHour(ConvertedDateTime, -7), False) * 1000;
 end;
 function Tdm.StringToDateTime(const Value: String): TDateTime;
 var
