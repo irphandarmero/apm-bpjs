@@ -267,7 +267,7 @@ object frmMain: TfrmMain
       Height = 531
       Align = alClient
       TabOrder = 2
-      Properties.ActivePage = TabLayanan
+      Properties.ActivePage = TabJSON
       Properties.CustomButtons.Buttons = <>
       ClientRectBottom = 527
       ClientRectLeft = 4

@@ -1118,8 +1118,28 @@ begin
           finally
             jPeserta.Free;
           end;
+//        cek riwayat pasien, apakah sudah terbit sep hari ini?
+//        baik dari faskes 1 atau faskes 2
+          memResponse.Text := bpjs.GetRiwayatSEP(edNoKartu.Text);
+          jSep := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
+          if Assigned(jSep) then
+          try
+            SepArr := jSep.GetValue('histori') as TJSONArray;
+            jSepItem := SepArr.Get(0) as TJSONObject;
+            if (jSepItem.GetValue<string>('tglSep') = FormatDateTime('yyyy-mm-dd', Now)) then
+            begin
+              ShowError('Pasien ini telah mendapatkan pelayanan di '+jSepItem.GetValue<string>('ppkPelayanan'));
+              ShowError('Terjadi kesalahan, Silahkan ke Loket Pendaftaran!');
+              ClearParameterValue;
+              pgUtama.ActivePageIndex := 0;
+              edKodeBooking.SetFocus;
+              Exit;
+            end;
+          finally
+            jSep.Free;
+          end;
 
-           try
+          try
             memResponse.Text := bpjs.CariNoSuratKontrol(NomorReferensi);
             jSurkon := TJSONObject.ParseJSONValue(memResponse.Text) as TJSONObject;
             if Assigned(jSurkon) then
@@ -1177,10 +1197,10 @@ begin
                   jRujukan := TJSONObject.ParseJSONValue(memRequest.Text) as TJSONObject;
                   if Assigned(jRujukan) then
                   try
-                    KodeDiag := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
+                    KodeDiag    := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
                     AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
                     KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
-                    TglRujukan := jRujukan.GetValue<string>('rujukan.tglKunjungan');
+                    TglRujukan  := jRujukan.GetValue<string>('rujukan.tglKunjungan');
                     memDiagnosa.Text := KodeDiag + ' - ' + jRujukan.GetValue<string>('rujukan.diagnosa.nama');
                   finally
                     jRujukan.Free; // Bersihkan memori Faskes 1
@@ -1191,10 +1211,10 @@ begin
                   jRujukan := TJSONObject.ParseJSONValue(memRequest.Text) as TJSONObject;
                   if Assigned(jRujukan) then
                   try
-                    KodeDiag := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
+                    KodeDiag    := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
                     AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
                     KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
-                    TglRujukan := jRujukan.GetValue<string>('rujukan.tglKunjungan');
+                    TglRujukan  := jRujukan.GetValue<string>('rujukan.tglKunjungan');
                     memDiagnosa.Text := KodeDiag + ' - ' + jRujukan.GetValue<string>('rujukan.diagnosa.nama');
                   finally
                     jRujukan.Free; // Bersihkan memori Faskes 2
@@ -1221,19 +1241,37 @@ begin
               memRequest.Text := bpjs.CekRujukan(NomorReferensi);
               jRujukan := TJSONObject.ParseJSONValue(memRequest.Text) as TJSONObject;
               if Assigned(jRujukan) then
-              try
-                KodeDiag := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
-                AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
-                KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
-                TglRujukan := jRujukan.GetValue<string>('rujukan.tglKunjungan');
-                memDiagnosa.Text := KodeDiag + ' - ' +jRujukan.GetValue<string>('rujukan.diagnosa.nama');
-              finally
-                jRujukan.Free;
+              begin
+                try
+                  KodeDiag := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
+                  AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
+                  KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
+                  TglRujukan := jRujukan.GetValue<string>('rujukan.tglKunjungan');
+                  memDiagnosa.Text := KodeDiag + ' - ' +jRujukan.GetValue<string>('rujukan.diagnosa.nama');
+                finally
+                  jRujukan.Free;
+                end;
+              end else
+              begin
+                  // Jika Faskes 1 gagal/error, coba Faskes 2
+                memRequest.Text := bpjs.CekRujukanFaskes2(NomorReferensi);
+                jRujukan := TJSONObject.ParseJSONValue(memRequest.Text) as TJSONObject;
+                if Assigned(jRujukan) then
+                try
+                  KodeDiag    := jRujukan.GetValue<string>('rujukan.diagnosa.kode');
+                  AsalRujukan := jRujukan.GetValue<string>('asalFaskes');
+                  KodePPKAsal := jRujukan.GetValue<string>('rujukan.provPerujuk.kode');
+                  TglRujukan  := jRujukan.GetValue<string>('rujukan.tglKunjungan');
+                  memDiagnosa.Text := KodeDiag + ' - ' + jRujukan.GetValue<string>('rujukan.diagnosa.nama');
+                finally
+                  jRujukan.Free; // Bersihkan memori Faskes 2
+                end;
               end;
             end;
           except
 
           end;
+
           dm.LoadDokter(KodeDokter);
           dm.LoadPoli(IdRuang);
           KodeDokterMapping := dm.vDokter.FieldByName('KdDokterMapping').AsString;
